@@ -1,0 +1,14 @@
+# Gradle
+.gradle/
+build/
+out/
+
+# IntelliJ
+.idea/
+*.iml
+
+# OS
+.DS_Store
+
+# Env
+.env

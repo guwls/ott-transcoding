@@ -1,0 +1,72 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/ott
+    username: root
+    password: 1234
+
+  flyway:
+    enabled: true
+    url: ${spring.datasource.url}
+    user: ${spring.datasource.username}
+    password: ${spring.datasource.password}
+    locations: classpath:db/migration  # 기본값이긴 한데 명시해두면 좋아
+    # 기존 테이블 있는 상태에서 처음 적용이면만 ↓ 켜기
+    # baseline-on-migrate: true
+
+  logging:
+    level:
+      org.flywaydb: DEBUG   # 어떤 DB로 붙는지 로그로 확인용(임시)
+
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+  servlet:
+    multipart:
+      max-file-size: 1GB
+      max-request-size: 1GB
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  kafka:
+    bootstrap-servers: localhost:9094
+    properties:
+      enable.idempotence: true
+    producer:
+      acks: all
+      retries: 10
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+    consumer:
+      group-id: app-default
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
+storage:
+  endpoint: http://localhost:9000
+  bucket: media
+  accessKey: minio
+  secretKey: minio123
+
+
+
+server:
+  port: 8080
