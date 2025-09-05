@@ -4,14 +4,6 @@ plugins {
     java
 }
 
-allprojects {
-    group = "com.example"
-    version = "0.1.0"
-    repositories {
-        mavenCentral()
-    }
-}
-
 subprojects {
     apply(plugin = "java")
     apply(plugin = "io.spring.dependency-management")

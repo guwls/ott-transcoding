@@ -2,10 +2,6 @@ plugins {
     id("org.springframework.boot")
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     implementation(project(":common"))
 
