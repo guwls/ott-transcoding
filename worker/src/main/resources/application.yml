@@ -25,6 +25,12 @@ spring:
     listener:
       ack-mode: MANUAL                   # 수동 커밋
 
+storage:
+  endpoint: http://localhost:9000
+  accessKey: minioadmin
+  secretKey: minioadmin123
+  bucket: media
+
 app:
   topics:
     transcode-requests: transcode-requests-v1
