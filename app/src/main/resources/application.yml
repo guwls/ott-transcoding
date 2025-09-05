@@ -63,9 +63,8 @@ management:
 storage:
   endpoint: http://localhost:9000
   bucket: media
-  accessKey: minio
-  secretKey: minio123
-
+  accessKey: minioadmin
+  secretKey: minioadmin123
 
 
 server:
