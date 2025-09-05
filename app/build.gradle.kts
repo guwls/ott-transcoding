@@ -32,6 +32,10 @@ dependencies {
     //Kafka
     implementation("org.springframework.kafka:spring-kafka")
 
+    //Lombok
+    compileOnly("org.projectlombok:lombok:1.18.34")
+    annotationProcessor("org.projectlombok:lombok:1.18.34")
+
 
 
     // Test
@@ -40,4 +44,7 @@ dependencies {
     testImplementation("org.testcontainers:mysql:1.20.1")
     testImplementation("com.redis:testcontainers-redis:2.2.4")
     testImplementation("io.lettuce:lettuce-core:6.4.0.RELEASE")
+    testImplementation("org.testcontainers:kafka:1.19.7")
+    testImplementation("org.testcontainers:junit-jupiter:1.19.7")
+
 }
