@@ -36,3 +36,4 @@ app:
     transcode-requests: transcode-requests-v1
   worker:
     simulate-ms: 500                     # 더미 처리 시간
+    fail-on-any-variant: false
