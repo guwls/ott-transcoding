@@ -1,3 +1,8 @@
+app:
+  topics:
+    transcode-requests: transcode.requests        # 프로듀서가 보낼 토픽
+    transcode-results: transcode.results          # (필요 시)
+
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/ott
