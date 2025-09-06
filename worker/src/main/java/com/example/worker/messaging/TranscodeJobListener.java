@@ -7,6 +7,7 @@ import org.slf4j.*;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
+import com.example.worker.service.ThumbnailPipeline;
 
 @Component
 public class TranscodeJobListener {
@@ -16,8 +17,11 @@ public class TranscodeJobListener {
     private final JobStatusService statusService;
     private final HlsMultiPipeline pipeline;
 
-    public TranscodeJobListener(JobStatusService statusService, HlsMultiPipeline pipeline) {
-        this.statusService = statusService; this.pipeline = pipeline;
+    private final ThumbnailPipeline thumbPipeline;
+    public TranscodeJobListener(JobStatusService statusService,
+                                com.example.worker.service.HlsMultiPipeline pipeline,
+                                ThumbnailPipeline thumbPipeline) {
+        this.statusService = statusService; this.pipeline = pipeline; this.thumbPipeline = thumbPipeline;
     }
 
     @KafkaListener(topics = "${app.topics.transcode-requests}",
