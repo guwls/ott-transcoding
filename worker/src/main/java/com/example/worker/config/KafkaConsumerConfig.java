@@ -29,7 +29,7 @@ public class KafkaConsumerConfig {
     transcodeListenerContainerFactory(ConsumerFactory<String, TranscodeRequestedEvent> cf) {
         var f = new ConcurrentKafkaListenerContainerFactory<String, TranscodeRequestedEvent>();
         f.setConsumerFactory(cf);
-        f.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
+        f.getContainerProperties().setAckMode(org.springframework.kafka.listener.ContainerProperties.AckMode.RECORD);
         f.setConcurrency(2); // 워커 병렬성
         return f;
     }

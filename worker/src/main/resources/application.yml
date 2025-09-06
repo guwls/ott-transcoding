@@ -11,6 +11,9 @@ spring:
       hibernate.dialect: org.hibernate.dialect.MySQL8Dialect
 
   kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     bootstrap-servers: localhost:9094   # 호스트에서 접근하는 외부포트
     consumer:
       group-id: transcode-workers
@@ -19,6 +22,7 @@ spring:
       properties:
         spring.json.value.default.type: com.example.worker.messaging.TranscodeRequestedEvent
         spring.json.trusted.packages: com.example.*
+        spring.json.add.type.headers: true
       auto-offset-reset: earliest
       enable-auto-commit: false
       max-poll-records: 1
