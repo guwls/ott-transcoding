@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import java.nio.file.*;
 import java.util.*;
 
+import static com.example.worker.util.ResourceGuards.rmQuietly;
+import static com.example.worker.util.ResourceGuards.tempDir;
+
 @Service
 public class ThumbnailPipeline {
     private static final Logger log = LoggerFactory.getLogger(ThumbnailPipeline.class);
@@ -41,7 +44,7 @@ public class ThumbnailPipeline {
             //로컬 임시 출력 디렉토리에서 썸네일 생성
             //각 시점마다 thumb_000010.jpg 같은 규칙 이름으로 생성
             //maxWidth=1280 → 긴 변이 1280을 넘지 않도록 스케일
-            outDir = Files.createTempDirectory("thumbs-");
+            outDir = tempDir("thumbs-");
             List<Path> files = new ArrayList<>();
             for (int t : times) {
                 files.add(gen.captureAt(input, outDir, t, 1280));
@@ -66,7 +69,8 @@ public class ThumbnailPipeline {
         } catch (Exception e) {
             throw new RuntimeException("THUMB_PIPELINE_FAILED", e);
         } finally {
-            safeDelete(input); safeDeleteDir(outDir);
+            rmQuietly(input);
+            rmQuietly(outDir);
         }
     }
 
