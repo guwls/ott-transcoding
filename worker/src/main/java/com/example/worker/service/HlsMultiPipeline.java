@@ -7,9 +7,12 @@ import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
+import com.example.worker.ffmpeg.FfprobeUtil;
 import java.nio.file.*;
 import java.util.*;
+
+import static com.example.worker.util.ResourceGuards.rmQuietly;
+import static com.example.worker.util.ResourceGuards.tempDir;
 
 @Service
 public class HlsMultiPipeline {
@@ -37,20 +40,16 @@ public class HlsMultiPipeline {
         List<String> succeeded = new ArrayList<>();
         List<String> failed = new ArrayList<>();
 
+        double dur = FfprobeUtil.durationSeconds(input);                  // 초
+        long timeoutSec = Math.min( (long)(dur * 6) + 120, 60 * 30 );     // ≈ 실시간*6 + 여유, 상한 30분
+
         try {
-            input = storage.downloadToTemp(inputKey);
-            outRoot = Files.createTempDirectory("hls-");
+            input = storage.downloadToTemp(inputKey);    // 내부에서 tempFile 사용
+            outRoot = tempDir("hls-");
 
             for (HlsPreset p : presets) {
                 var vdir = outRoot.resolve(p.name()); // 예: /tmp/hls-xxxx/720p
-                try {
-                    ffmpeg.runVariant(input, vdir, p);
-                    succeeded.add(p.name());
-                } catch (Exception e) {
-                    failed.add(p.name());
-                    log.error("[HLS] variant failed name={} err={}", p.name(), e.toString());
-                    if (failOnAnyVariant) throw e;
-                }
+                ffmpeg.runVariant(input, vdir, p, timeoutSec);
             }
 
             if (succeeded.isEmpty())
@@ -64,17 +63,10 @@ public class HlsMultiPipeline {
             storage.uploadDir(targetPrefix, outRoot);
 
             log.info("[HLS] uploaded master + variants ok. success={} failed={}", succeeded, failed);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         } finally {
-            safeDelete(input); safeDeleteDir(outRoot);
+            rmQuietly(input);
+            rmQuietly(outRoot);
         }
     }
 
-    private void safeDelete(Path p){ if (p==null) return; try{ Files.deleteIfExists(p);}catch(Exception ignored){} }
-    private void safeDeleteDir(Path dir){
-        if (dir==null) return;
-        try { Files.walk(dir).sorted((a,b)->b.compareTo(a)).forEach(x -> { try{ Files.deleteIfExists(x);}catch(Exception ignored){} }); }
-        catch(Exception ignored){}
-    }
 }

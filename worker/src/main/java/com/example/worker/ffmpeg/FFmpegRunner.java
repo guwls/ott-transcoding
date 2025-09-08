@@ -6,9 +6,15 @@ import java.nio.file.*;
 import java.time.Duration;
 import java.util.*;
 
+import static com.example.worker.util.SystemGuards.requireDiskSpace;
+import static com.example.worker.util.SystemGuards.requireFreeMemory;
+
 public class FFmpegRunner {
 
-    public void runVariant(Path inputMp4, Path outDir, HlsPreset p) {
+    public void runVariant(Path inputMp4, Path outDir, HlsPreset p, long timeoutSec) {
+        requireDiskSpace(outDir.toFile(), 2L * 1024 * 1024 * 1024); // 최소 2GB
+        requireFreeMemory(256L * 1024 * 1024);                      // 최소 256MB
+
         try { Files.createDirectories(outDir); }
         catch (IOException e) { throw new RuntimeException("PREPARE_OUTDIR_FAILED:" + outDir, e); }
 
@@ -35,28 +41,28 @@ public class FFmpegRunner {
                 out
         );
 
-        exec(cmd, Duration.ofMinutes(10));
+        exec(cmd, Duration.ofSeconds(timeoutSec));
     }
 
     private void exec(List<String> cmd, Duration timeout) {
+        Process p = null;
         try {
-            Process p = new ProcessBuilder(cmd).redirectErrorStream(true).start();
+            p = new ProcessBuilder(cmd).redirectErrorStream(true).start();
+
             StringBuilder log = new StringBuilder();
             try (var br = new BufferedReader(new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8))) {
                 String line; while ((line = br.readLine()) != null) log.append(line).append('\n');
             }
             boolean finished = p.waitFor(timeout.toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS);
-            if (!finished) { p.destroyForcibly(); throw new RuntimeException("FFMPEG_TIMEOUT"); }
-            int code = p.exitValue();
-            if (code != 0) throw new RuntimeException("FFMPEG_FAILED(code="+code+")\n"+tail(log.toString(), 200));
+            if (!finished) {
+                p.descendants().forEach(ProcessHandle::destroyForcibly);
+                p.destroyForcibly();
+                throw new RuntimeException("FFMPEG_TIMEOUT");
+            }
+            if (p.exitValue() != 0) throw new RuntimeException("FFMPEG_FAILED(code="+p.exitValue()+")");
         } catch (Exception e) {
-            throw new RuntimeException("FFMPEG_EXEC_ERROR", e);
+            if (p != null) { p.descendants().forEach(ProcessHandle::destroyForcibly); p.destroyForcibly(); }
+            throw (e instanceof RuntimeException re)? re : new RuntimeException("FFMPEG_EXEC_ERROR", e);
         }
-    }
-
-    private String tail(String s, int lines) {
-        var arr = s.split("\n");
-        int from = Math.max(0, arr.length - lines);
-        return String.join("\n", Arrays.copyOfRange(arr, from, arr.length));
     }
 }
