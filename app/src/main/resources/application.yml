@@ -63,7 +63,10 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus
+        include: health,info,prometheus,metrics,loggers
+  metrics:
+    tags:
+      application: ott-app
 
 storage:
   endpoint: http://localhost:9000
@@ -71,7 +74,6 @@ storage:
   bucket: media
   accessKey: minioadmin
   secretKey: minioadmin123
-
 
 server:
   port: 8080

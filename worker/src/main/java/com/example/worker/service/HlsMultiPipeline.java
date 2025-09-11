@@ -16,7 +16,6 @@ import static com.example.worker.util.ResourceGuards.tempDir;
 
 @Service
 public class HlsMultiPipeline {
-
     private static final Logger log = LoggerFactory.getLogger(HlsMultiPipeline.class);
 
     private final VideoRepository videos;
@@ -30,7 +29,9 @@ public class HlsMultiPipeline {
     }
 
     /** targetPrefix 예: videos/{videoId}/hls/ → 그 아래에 480p/720p/1080p + master.m3u8 생성/업로드 */
+    @Value("${app.worker.simulate-all:false}") boolean simulateAll;
     public void run(Long videoId, String targetPrefix, List<String> variantNames) {
+
         var video = videos.findById(videoId).orElseThrow(() -> new IllegalStateException("VIDEO_NOT_FOUND:" + videoId));
         var inputKey = video.getOriginalKey();
 
@@ -67,6 +68,8 @@ public class HlsMultiPipeline {
             rmQuietly(input);
             rmQuietly(outRoot);
         }
+
+        if (simulateAll) { try { Thread.sleep(5); } catch (InterruptedException ignored) {} return; }
     }
 
 }

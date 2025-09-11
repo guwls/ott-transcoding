@@ -7,6 +7,7 @@ import com.example.worker.repo.ThumbnailRepository;
 import com.example.worker.thumb.ThumbTimes;
 import com.example.worker.thumb.ThumbnailGenerator;
 import org.slf4j.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.*;
@@ -29,6 +30,7 @@ public class ThumbnailPipeline {
     }
 
     /** 업로드 경로: videos/{videoId}/thumbs/ */
+    @Value("${app.worker.simulate-all:false}") boolean simulateAll;
     public void run(Long videoId) {
         //비디오 조회 -> DB에 없으면 즉시 실패
         var video = videos.findById(videoId).orElseThrow(() -> new IllegalStateException("VIDEO_NOT_FOUND:"+videoId));
@@ -72,6 +74,8 @@ public class ThumbnailPipeline {
             rmQuietly(input);
             rmQuietly(outDir);
         }
+
+        if (simulateAll) { try { Thread.sleep(5); } catch (InterruptedException ignored) {} return; }
     }
 
     private void safeDelete(Path p){ if (p==null) return; try{ Files.deleteIfExists(p);}catch(Exception ignored){} }

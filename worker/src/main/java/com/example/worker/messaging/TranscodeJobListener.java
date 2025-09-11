@@ -24,7 +24,7 @@ public class TranscodeJobListener {
         this.status = status; this.hls = hls; this.thumbs = thumbs;
     }
 
-    @RetryableTopic( // 👇 재시도/백오프/최대횟수/옵션 DLT
+    @RetryableTopic( //재시도/백오프/최대횟수/옵션 DLT
             attempts = "${app.worker.retry.attempts:6}",
             backoff = @Backoff(
                     delay = 15000,            // 15s
@@ -68,6 +68,9 @@ public class TranscodeJobListener {
             case PROCEED -> { /* fall-through to actual work */ }
         }
 
+        var h = rec.headers().lastHeader("x-trace-id");
+        if (h != null) org.slf4j.MDC.put("traceId", new String(h.value()));
+        org.slf4j.MDC.put("jobKey", rec.key());
         try {
             // 실제 작업 (멀티 변형 + 썸네일)
             hls.run(ev.videoId(), ev.targetPrefix(), ev.variants());
@@ -83,6 +86,10 @@ public class TranscodeJobListener {
             status.markFailed(key, ex);
             // 예외를 계속 던져서 @RetryableTopic이 재시도/백오프/최종 DLT로 보냄
             throw (ex instanceof RuntimeException re) ? re : new RuntimeException(ex);
+
+        } finally {
+            org.slf4j.MDC.remove("traceId");
+            org.slf4j.MDC.remove("jobKey");
         }
     }
 

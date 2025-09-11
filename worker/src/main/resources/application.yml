@@ -41,3 +41,13 @@ app:
   worker:
     simulate-ms: 500                     # 더미 처리 시간
     fail-on-any-variant: false
+    simulate-all: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,loggers
+  metrics:
+    tags:
+      application: ott-worker

@@ -18,6 +18,10 @@ dependencies {
     implementation("io.minio:minio:8.5.9")
     runtimeOnly("com.mysql:mysql-connector-j")
 
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-registry-prometheus")
+
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.kafka:spring-kafka-test")
     testImplementation("org.testcontainers:mysql:1.20.1")
