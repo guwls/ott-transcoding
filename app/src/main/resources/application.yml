@@ -9,6 +9,9 @@ spring:
     username: root
     password: 1234
 
+  config:
+    import: optional:file:.env
+
   flyway:
     enabled: true
     url: ${spring.datasource.url}
@@ -39,6 +42,16 @@ spring:
     redis:
       host: localhost
       port: 6379
+
+rate-limit:
+  enqueue:
+    capacity: 10         # 버스트 최대 토큰
+    refillPerSec: 5      # 초당 보충 토큰 수 (QPS 비슷한 개념)
+
+security:
+  api-keys:               # 임시 화이트리스트(실무는 DB/인증서버)
+    - alice-key
+    - bob-key
 
   kafka:
     bootstrap-servers: localhost:9094
