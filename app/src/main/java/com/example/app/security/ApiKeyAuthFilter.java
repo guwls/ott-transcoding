@@ -1,6 +1,7 @@
 package com.example.app.security;
 
 import com.example.app.config.SecurityProps;
+import com.example.app.error.ErrorJsonWriter;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import org.slf4j.MDC;
@@ -31,9 +32,7 @@ public class ApiKeyAuthFilter implements Filter {
         String key = r.getHeader(HEADER);
 
         if (key == null || key.isBlank() || !whitelist.contains(key)) {
-            w.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            w.setContentType("application/json");
-            w.getWriter().write("{\"status\":401,\"code\":\"UNAUTHORIZED\",\"message\":\"invalid api key\"}");
+            ErrorJsonWriter.write(w, 401, "UNAUTHORIZED", "invalid api key", null);
             return;
         }
 

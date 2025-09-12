@@ -1,30 +1,23 @@
 app:
   topics:
-    transcode-requests: transcode.requests        # 프로듀서가 보낼 토픽
-    transcode-results: transcode.results          # (필요 시)
+    transcode-requests: transcode.requests
+    transcode-results: transcode.results
 
 spring:
+  config:
+    import: optional:file:.env
+
   datasource:
     url: jdbc:mysql://localhost:3306/ott
     username: root
     password: 1234
-
-  config:
-    import: optional:file:.env
 
   flyway:
     enabled: true
     url: ${spring.datasource.url}
     user: ${spring.datasource.username}
     password: ${spring.datasource.password}
-    locations: classpath:db/migration  # 기본값이긴 한데 명시해두면 좋아
-    # 기존 테이블 있는 상태에서 처음 적용이면만 ↓ 켜기
-    # baseline-on-migrate: true
-
-  logging:
-    level:
-      org.flywaydb: DEBUG   # 어떤 DB로 붙는지 로그로 확인용(임시)
-
+    locations: classpath:db/migration
 
   jpa:
     hibernate:
@@ -38,20 +31,11 @@ spring:
     multipart:
       max-file-size: 1GB
       max-request-size: 1GB
+
   data:
     redis:
       host: localhost
       port: 6379
-
-rate-limit:
-  enqueue:
-    capacity: 10         # 버스트 최대 토큰
-    refillPerSec: 5      # 초당 보충 토큰 수 (QPS 비슷한 개념)
-
-security:
-  api-keys:               # 임시 화이트리스트(실무는 DB/인증서버)
-    - alice-key
-    - bob-key
 
   kafka:
     bootstrap-servers: localhost:9094
@@ -72,6 +56,16 @@ security:
       properties:
         spring.json.trusted.packages: "*"
 
+rate-limit:
+  enqueue:
+    capacity: 10
+    refillPerSec: 5
+
+security:
+  api-keys:
+    - alice-key
+    - bob-key
+
 management:
   endpoints:
     web:
@@ -90,3 +84,7 @@ storage:
 
 server:
   port: 8080
+
+logging:
+  level:
+    org.flywaydb: DEBUG

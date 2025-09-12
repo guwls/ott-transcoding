@@ -1,5 +1,6 @@
 package com.example.app.ratelimit;
 
+import com.example.app.error.ErrorJsonWriter;
 import com.example.app.security.ApiKeyAuthFilter;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
@@ -38,9 +39,9 @@ public class EnqueueRateLimitFilter implements Filter {
         if (!v.allowed()) {
             long retrySec = (long) Math.ceil(v.retryAfterMs() / 1000.0);
             w.setHeader("Retry-After", String.valueOf(retrySec));
-            w.setStatus(429);
-            w.setContentType("application/json");
-            w.getWriter().write("{\"status\":429,\"code\":\"RATE_LIMITED\",\"message\":\"too many requests\"}");
+            w.setHeader("X-RateLimit-Limit", String.valueOf(limiter.capacity()));
+            w.setHeader("X-RateLimit-Remaining", String.valueOf(Math.max(0, v.remaining())));
+            ErrorJsonWriter.write(w, 429, "RATE_LIMITED", "too many requests", null);
             return;
         }
         chain.doFilter(req, res);

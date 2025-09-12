@@ -2,6 +2,10 @@ package com.example.app.controller;
 
 import com.example.app.service.TranscodeEnqueueService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.web.bind.annotation.*;
@@ -22,8 +26,18 @@ public class TranscodeEnqueueController {
     public record EnqueueRequest(@NotEmpty List<String> variants) {}
     public record EnqueueResponse(Long jobId, String jobKey, String status, boolean created) {}
 
-    @Operation(summary = "트랜스코딩 작업 큐 투입(멱등)",
-            description = "Idempotency-Key 헤더가 같으면 중복 생성 없이 동일 작업을 반환합니다.")
+    @Operation(summary="Enqueue transcode job", description="variants 지정 후 큐 투입")
+    @ApiResponses({
+            @ApiResponse(responseCode="200", description="enqueued"),
+            @ApiResponse(responseCode="401", description="unauthorized",
+                    content=@Content(schema=@Schema(implementation=com.example.app.error.ErrorResponse.class))),
+            @ApiResponse(responseCode="404", description="video not found",
+                    content=@Content(schema=@Schema(implementation=com.example.app.error.ErrorResponse.class))),
+            @ApiResponse(responseCode="409", description="idempotency conflict",
+                    content=@Content(schema=@Schema(implementation=com.example.app.error.ErrorResponse.class))),
+            @ApiResponse(responseCode="429", description="rate limited",
+                    content=@Content(schema=@Schema(implementation=com.example.app.error.ErrorResponse.class)))
+    })
     @PostMapping
     public EnqueueResponse enqueue(@PathVariable Long videoId,
                                    @RequestBody EnqueueRequest req,
